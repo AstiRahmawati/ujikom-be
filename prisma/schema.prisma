@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  Admin
+  Member
+}
+
+model User {
+  id String @id @unique @default(uuid())
+  email String       @db.VarChar(100)
+  username  String       @db.VarChar(100)
+  password String    @db.VarChar(100)
+  role Role @default(Member)
+  token    String?   @db.VarChar(100)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model Resep {
+  id String @id @unique @default(uuid())
+  img_url String @db.Text
+  judul String @db.VarChar(100)
+  alat_bahan String @db.Text
+  langkah String @db.Text
+  id_kategori String
+  kategori Kategori @relation(fields: [id_kategori], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  kalender Kalender[]
+
+  @@map("resep")
+}
+
+model Kategori {
+  id String @id @unique @default(uuid())
+  img_url String @db.Text
+  judul String @db.VarChar(100)
+  deskripsi String @db.VarChar(200)
+  reseps Resep[]
+  
+  @@map("kategori")
+}
+
+model Kalender {
+  id String @id @unique @default(uuid())
+  tanggal DateTime @default(now())
+  catatan String @db.Text
+  id_resep String 
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  resep Resep @relation(fields: [id_resep], references: [id])
+  pengingat Pengingat[]
+
+  @@map("kalender")
+}
+
+model Pengingat {
+  id String @id @unique @default(uuid())
+  pesan String @db.Text
+  id_kalender String 
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  kalender Kalender @relation(fields: [id_kalender], references: [id])
+
+  @@map("pengingat")
+}
+
